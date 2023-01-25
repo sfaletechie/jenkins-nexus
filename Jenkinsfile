@@ -14,15 +14,20 @@ pipeline {
         stage("Clone code from GitHub") {
             steps {
                 script {
-                    git branch: 'main', credentialsId: 'githubwithpassword', url: 'https://github.com/sfaletechie/jenkins-nexus.git';
+                    git branch: 'main', credentialsId: 'github_auth_sfale', url: 'https://github.com/sfaletechie/jenkins-nexus.git';
                 }
             }
         }
-        stage("Maven Build") {
-            steps {
-                script {
-                    sh "mvn package -DskipTests=true"
-                }
+        stage("TEST"){
+            steps{
+                sh 'mvn test'
+                slackSend channel: 'devops-notifications', message: 'this is TEST stage $BUILD_ID'
+            }
+        }
+        stage("Build"){
+            steps{
+                slackSend channel: 'devops-notifications', message: 'this is BUILD stage'
+                sh 'mvn package'
             }
         }
         stage("Publish to Nexus Repository Manager") {
@@ -59,6 +64,32 @@ pipeline {
                     }
                 }
             }
+        }
+        stage("deployOnTest"){
+            steps{
+                slackSend channel: 'devops-notifications', message: 'this is deployOnTest stage'
+                deploy adapters: [tomcat7(credentialsId: 'tomcat8details', path: '', url: 'http://192.168.29.22:8080/')], contextPath: '/app', onFailure: false, war: '**/*.war'
+            }
+        }
+        stage("deployOnPROD"){\
+             input {
+                message 'continueToPROD'
+            }
+            steps{
+                slackSend channel: 'devops-notifications', message: 'this is deployOnPROD stage'
+                deploy adapters: [tomcat7(credentialsId: 'tomcat8details', path: '', url: 'http://192.168.29.42:8081/repository/simpleapp-release/')], contextPath: '/app', onFailure: false, war: '**/*.war'
+            }
+        }
+    }
+    post{
+        always{
+            echo "========always========"
+        }
+        success{
+            echo "========pipeline executed successfully ========"
+        }
+        failure{
+            echo "========pipeline execution failed========"
         }
     }
 }
