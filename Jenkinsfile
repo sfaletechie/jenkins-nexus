@@ -68,7 +68,7 @@ pipeline {
         stage("deployOnTest"){
             steps{
                 slackSend channel: 'devops-notifications', message: 'this is deployOnTest stage'
-                deploy adapters: [tomcat7(credentialsId: 'tomcat8details', path: '', url: 'http://192.168.29.22:8080/')], contextPath: '/app1', onFailure: false, jar: 'target/my-app-1.0-SNAPSHOT.jar'
+                deploy adapters: [tomcat7(credentialsId: 'tomcat8details', path: '', url: 'http://192.168.29.22:8080/')], contextPath: '/app1', onFailure: false, war: 'target/my-app-1.0-SNAPSHOT.jar'
             }
         }
         stage("deployOnPROD"){\
@@ -77,7 +77,7 @@ pipeline {
             }
             steps{
                 slackSend channel: 'devops-notifications', message: 'this is deployOnPROD stage'
-                deploy adapters: [tomcat7(credentialsId: 'tomcat8details', path: '', url: 'http://192.168.29.42:8081/')], contextPath: '/app1', onFailure: false, jar: 'target/my-app-1.0-SNAPSHOT.jar'
+                deploy adapters: [tomcat7(credentialsId: 'tomcat8details', path: '', url: 'http://192.168.29.42:8081/')], contextPath: '/app1', onFailure: false, war: 'target/my-app-1.0-SNAPSHOT.jar'
             }
         }
     }
